@@ -1,0 +1,145 @@
+import bpy
+import os
+
+
+scene = bpy.context.scene
+obj_active = scene.objects.active
+selection = bpy.context.selected_objects
+
+
+#-------------------------------------------------------
+#*****Set World Unit Stuff****
+#-------------------------------------------------------
+u = 1
+b = bpy.context.scene.unit_settings.system
+print(b)
+if (b == 'METRIC') or (b == 'IMPERIAL'):
+    u = (bpy.context.scene.unit_settings.scale_length)
+    print(u)
+
+
+
+#-------------------------------------------------------
+#*****Unwrap All Selected Objects****
+#-------------------------------------------------------
+bpy.ops.object.select_all(action='DESELECT')
+bpy.context.area.type = 'VIEW_3D'
+
+
+for obj in selection:
+    
+    obj.select = True
+    
+    # some exporters only use the active object
+    scene.objects.active = obj
+
+    name = bpy.path.clean_name(obj.name)
+  
+    #####################################
+    
+    
+    
+
+
+
+
+    #-------------------------------------------------------
+    #*****Remove All UV-Layers****
+    #-------------------------------------------------------
+    
+    x = len(bpy.context.scene.objects.active.data.uv_textures)
+    while x > 0:
+        bpy.ops.mesh.uv_texture_remove()
+        x=x-1
+
+    #-------------------------------------------------------
+    #*****UV-Layer 0****
+    #-------------------------------------------------------
+    
+    bpy.ops.mesh.uv_texture_add()
+    bpy.context.object.data.uv_textures.active_index = 0
+    #bpy.context.area.type = 'VIEW_3D'
+    
+
+    #-------------------------------------------------------
+    #*****UV Unwrap****
+    #-------------------------------------------------------
+    
+    bpy.ops.object.editmode_toggle()
+    bpy.ops.mesh.select_all(action='SELECT')
+
+    bpy.ops.uv.smart_project(stretch_to_bounds=False)
+    
+    #*****Seams From Islands*****
+    #bpy.ops.uv.seams_from_islands()
+
+
+    
+    #-------------------------------------------------------
+    #*****UV World Scale Apply*****
+    #-------------------------------------------------------    
+    
+    #*****Do selected objects have materials slots?*****
+    if len(bpy.context.scene.objects.active.data.materials)==0:
+        bpy.ops.object.material_slot_add()
+            
+    originalMat = bpy.context.active_object.data.materials[0]
+    
+    
+    #*****Set Checker Map*****
+    bpy.context.area.type = 'IMAGE_EDITOR'
+    bpy.context.scene.texToolsSettings.size_dropdown = '512'
+    bpy.ops.uv.textools_texel_checker_map()
+    bpy.ops.object.editmode_toggle()  
+        
+    bpy.ops.image.new(name="untitled", width=512, height=512, generated_type='UV_GRID')
+
+    
+    bpy.context.scene.texToolsSettings.texel_density = (u*512)
+    bpy.ops.uv.textools_texel_density_set()
+    bpy.context.area.type = 'VIEW_3D'
+    
+    #*****Set Original Material*****
+    #bpy.context.active_object.data.materials[0] = originalMat
+    
+    #*****Set Checker Material*****
+    #bpy.context.active_object.data.materials[0] = originalMat
+    
+    
+    
+    #-------------------------------------------------------
+    #*****Add Lightmap UV*****
+    #-------------------------------------------------------
+    bpy.ops.mesh.uv_texture_add()
+    bpy.context.object.data.uv_textures.active_index = 1
+
+    bpy.context.area.type = 'IMAGE_EDITOR'
+    #bpy.ops.object.editmode_toggle()
+    
+    bpy.ops.uv.smart_project(island_margin=0.1)
+    bpy.context.space_data.uv_editor.use_snap_to_pixels = True
+    bpy.ops.uv.select_all(action='SELECT')
+    bpy.ops.uv.snap_selected(target='PIXELS')
+        
+    bpy.context.space_data.uv_editor.use_snap_to_pixels = False
+
+    bpy.ops.object.editmode_toggle()    
+
+    bpy.context.object.data.uv_textures.active_index = 0
+    
+
+    
+    
+    
+    
+    #####################################
+    obj.select = False
+    print("written:")
+
+bpy.context.area.type = 'TEXT_EDITOR'
+scene.objects.active = obj_active
+
+
+
+for obj in selection:
+    obj.select = True
