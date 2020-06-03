@@ -1,5 +1,5 @@
 # Inreal-Tools
-Blender Add-on with small tools to make your life easier
+Blender Add-on for Blender 2.79 with small tools to make your life easier
 
 ## Installation Guide
 Click "Install" in the preferences window and select the ZIP-File
