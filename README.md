@@ -8,4 +8,4 @@ Click "Install" in the preferences window and select the ZIP-File
 Batch Export
 - Emptys, Cameras and Lights get duplicated in the scene at the moment
 
-unwrap_BasicUVs is not impemented yet
+unwrap_BasicUVs is not yet implemented
